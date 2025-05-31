@@ -59,7 +59,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
         style={styles.keyboardView}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
       >
-        <Pressable onPress={Keyboard.dismiss} style={styles.pressableContainer}>
+        {/* <Pressable onPress={Keyboard.dismiss} style={styles.pressableContainer}> */}
           <ScrollView contentContainerStyle={styles.scrollContent}>
             <View style={styles.header}>
               <TouchableOpacity 
@@ -157,7 +157,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
               </TouchableOpacity>
             </View>
           </ScrollView>
-        </Pressable>
+        {/* </Pressable> */}
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

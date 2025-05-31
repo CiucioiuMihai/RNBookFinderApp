@@ -3,7 +3,7 @@ import React from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { LogBox } from 'react-native';
 import { ThemeProvider } from './app/theme/ThemeProvider';
-import AppNavigator from './app/navigation/AppNavigator';
+import RootNavigator from './app/navigation/RootNavigator';
 
 // Ignore warnings that are causing issues
 LogBox.ignoreLogs([
@@ -16,7 +16,7 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <ThemeProvider>
-        <AppNavigator />
+        <RootNavigator />
       </ThemeProvider>
     </SafeAreaProvider>
   );

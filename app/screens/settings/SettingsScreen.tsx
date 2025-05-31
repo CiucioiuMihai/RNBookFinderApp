@@ -6,6 +6,7 @@ import ThemeToggle from '../../components/settings/ThemeToggle';
 import { logout } from '../../services/firebase-utils';
 import { auth } from '../../../firebaseConfig';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface SettingsScreenProps {
   navigation: any;
@@ -15,29 +16,32 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) => {
   const { colors, styles: themeStyles, theme } = useTheme();
   const currentUser = auth.currentUser;
 
-  const handleLogout = async () => {
+  const handleLogout = () => {
     Alert.alert(
       'Logout',
       'Are you sure you want to log out?',
       [
-        {
-          text: 'Cancel',
-          style: 'cancel',
-        },
+        { text: 'Cancel', style: 'cancel' },
         {
           text: 'Logout',
-          onPress: async () => {
-            try {
-              await logout();
-              navigation.navigate('Welcome');
-            } catch (error) {
-              console.error('Logout error:', error);
-              Alert.alert('Error', 'Failed to log out');
-            }
+          onPress: () => {
+            setTimeout(() => { actuallyLogout(); }, 0);
           },
         },
       ],
     );
+  };
+
+  const actuallyLogout = async () => {
+    try {
+      console.log('Logging out...');
+      await AsyncStorage.clear();
+      await logout();
+      // No navigation here; let the root navigator handle the switch
+    } catch (error) {
+      console.error('Logout error:', error);
+      Alert.alert('Error', 'Failed to log out');
+    }
   };
 
   const renderSettingItem = (
@@ -129,7 +133,7 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigation }) => {
           () => Alert.alert('Help', 'Help & support will be implemented soon'),
         )}
 
-        {currentUser && (
+        {currentUser && false && (
           <TouchableOpacity 
             style={[styles.logoutButton, { backgroundColor: colors.error }]} 
             onPress={handleLogout}

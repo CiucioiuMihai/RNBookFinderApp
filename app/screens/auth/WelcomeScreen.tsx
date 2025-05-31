@@ -41,15 +41,6 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ navigation }) => {
           >
             <Text style={[styles.buttonText, { color: colors.primary }]}>Create Account</Text>
           </TouchableOpacity>
-          
-          <TouchableOpacity
-            style={[styles.skipButton]}
-            onPress={() => navigation.navigate('Main')}
-          >
-            <Text style={[styles.skipButtonText, { color: colors.textSecondary }]}>
-              Continue as Guest
-            </Text>
-          </TouchableOpacity>
         </View>
       </View>
     </SafeAreaView>
@@ -102,14 +93,6 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 16,
     fontWeight: '600',
-  },
-  skipButton: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 8,
-  },
-  skipButtonText: {
-    fontSize: 14,
   },
 });
 

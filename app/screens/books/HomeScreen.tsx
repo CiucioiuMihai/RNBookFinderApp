@@ -3,13 +3,13 @@ import { View, StyleSheet, Text, ScrollView, TouchableOpacity } from 'react-nati
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../../theme/useTheme';
 import { searchBooks } from '../../services/books-api';
-import { Book } from '../../models/book';
+import { Book } from '../../models/Book';
 import BookList from '../../components/Books/BookList';
 import SearchBar from '../../components/Books/SearchBar';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { getFavoriteBookIds, isBookFavorited, addToFavorites, removeFromFavorites } from '../../services/firebase-utils';
+import { getFavoriteBookIds, isBookFavorited, addToFavorites, removeFromFavorites, logout } from '../../services/firebase-utils';
 import { auth } from '../../../firebaseConfig';
-import TestInput from '../../components/TestInput';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface HomeScreenProps {
   navigation: any;
@@ -80,7 +80,20 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   };
 
   const goToSearch = (query?: string) => {
-    navigation.navigate('Search', { query });
+    navigation.navigate('SearchTab', {
+      screen: 'Search',
+      params: { query },
+    });
+  };
+
+  const handleLogout = async () => {
+    try {
+      await AsyncStorage.clear();
+      await logout();
+      // RootNavigator will handle navigation
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
   };
 
   const renderCategoryButtons = () => {
@@ -128,24 +141,31 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
           </Text>
           <Text style={[styles.title, { color: colors.text }]}>Book Finder</Text>
         </View>
-        
-        <TouchableOpacity 
-          style={[styles.profileButton, { backgroundColor: colors.surface }]}
-          onPress={() => currentUser 
-            ? navigation.navigate('Settings') 
-            : navigation.navigate('Login')
-          }
-        >
-          <Icon 
-            name={currentUser ? 'account' : 'account-outline'} 
-            size={24} 
-            color={colors.primary} 
-          />
-        </TouchableOpacity>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <TouchableOpacity 
+            style={[styles.profileButton, { backgroundColor: colors.surface }]}
+            onPress={() => currentUser 
+              ? navigation.navigate('Settings') 
+              : navigation.navigate('Login')
+            }
+          >
+            <Icon 
+              name={currentUser ? 'account' : 'account-outline'} 
+              size={24} 
+              color={colors.primary} 
+            />
+          </TouchableOpacity>
+          {currentUser && (
+            <TouchableOpacity
+              style={[styles.profileButton, { backgroundColor: colors.error, marginLeft: 8 }]}
+              onPress={handleLogout}
+              accessibilityLabel="Logout"
+            >
+              <Icon name="logout" size={22} color="white" />
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
-
-      {/* Add test input temporarily */}
-      <TestInput />
 
       <SearchBar
         onSearch={goToSearch}

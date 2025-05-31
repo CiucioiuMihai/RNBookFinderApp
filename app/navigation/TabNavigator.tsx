@@ -59,7 +59,7 @@ const TabNavigator = () => {
       />
       
       <Tab.Screen
-        name="SettingsTab"
+        name="Settings"
         component={SettingsStack}
         options={{
           tabBarLabel: 'Settings',

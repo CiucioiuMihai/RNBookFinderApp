@@ -1,4 +1,4 @@
-import { GoogleBooksApiResponse, Book, convertGoogleBookToBook } from '../models/book';
+import { GoogleBooksApiResponse, Book, convertGoogleBookToBook } from '../models/Book';
 
 const API_URL = 'https://www.googleapis.com/books/v1/volumes';
 

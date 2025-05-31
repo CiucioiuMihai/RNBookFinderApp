@@ -78,7 +78,7 @@ const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
         style={styles.keyboardView}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
       >
-        <Pressable onPress={Keyboard.dismiss} style={styles.pressableContainer}>
+        {/* <Pressable onPress={Keyboard.dismiss} style={styles.pressableContainer}> */}
           <ScrollView contentContainerStyle={styles.scrollContent}>
             <View style={styles.header}>
               <TouchableOpacity 
@@ -225,7 +225,7 @@ const SignupScreen: React.FC<SignupScreenProps> = ({ navigation }) => {
               </TouchableOpacity>
             </View>
           </ScrollView>
-        </Pressable>
+        {/* </Pressable> */}
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
