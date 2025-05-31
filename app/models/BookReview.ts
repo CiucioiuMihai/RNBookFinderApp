@@ -1,3 +1,5 @@
+import { Timestamp } from "firebase/firestore";
+
 export interface BookReview {
   id?: string; // Firebase document ID
   bookId: string;
@@ -5,6 +7,6 @@ export interface BookReview {
   userName?: string;
   rating: number; // 1-5
   review?: string;
-  createdAt: Date | number;
-  updatedAt?: Date | number;
+  createdAt: Date | number |Timestamp
+  updatedAt?: Date | number | Timestamp;
 }
