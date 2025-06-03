@@ -3,7 +3,7 @@ import { View, StyleSheet, Text, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../../theme/useTheme';
 import { searchBooks } from '../../services/books-api';
-import { Book } from '../../models/book';
+import { Book } from '../../models/Book';
 import BookList from '../../components/Books/BookList';
 import SearchBar from '../../components/Books/SearchBar';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';

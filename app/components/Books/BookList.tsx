@@ -8,7 +8,7 @@ import {
   RefreshControl,
   ListRenderItemInfo
 } from 'react-native';
-import { Book } from '../../models/book';
+import { Book } from '../../models/Book';
 import BookCard from './BookCard';
 import { useTheme } from '../../theme/useTheme';
 

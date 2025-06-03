@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
-import { Book } from '../../models/book';
+import { Book } from '../../models/Book';
 import { useTheme } from '../../theme/useTheme';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 

@@ -3,7 +3,7 @@ import { View, StyleSheet, Text, TouchableOpacity, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../../theme/useTheme';
 import BookList from '../../components/Books/BookList';
-import { Book } from '../../models/book';
+import { Book } from '../../models/Book';
 import { getFavoriteBookIds, removeFromFavorites } from '../../services/firebase-utils';
 import { getBookById } from '../../services/books-api';
 import { auth } from '../../../firebaseConfig';
