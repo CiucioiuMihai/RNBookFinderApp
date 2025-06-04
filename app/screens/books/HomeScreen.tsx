@@ -36,7 +36,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
 
   useEffect(() => {
     // Fetch new releases
-    searchBooks('&orderBy=newest&maxResults=10')
+    searchBooks('q=subject:fiction&orderBy=newest&maxResults=10')
       .then(books => setNewReleases(books))
       .catch(err => console.error('Failed to fetch new releases:', err))
       .finally(() => setLoading(false));
@@ -182,7 +182,11 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
         <View style={styles.section}>
           {renderSectionHeader('New Releases', () => goToSearch('&orderBy=newest'))}
           <BookList
-            books={newReleases}
+            books={newReleases.map(book => ({
+              ...book,
+              reviewCount: book.reviewCount,
+              averageReviewRating: book.averageReviewRating,
+            }))}
             onBookPress={handleBookPress}
             isLoading={loading}
             horizontal={true}
@@ -194,7 +198,11 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
         <View style={styles.section}>
           {renderSectionHeader('Popular Now', () => goToSearch('&orderBy=relevance'))}
           <BookList
-            books={popularBooks}
+            books={popularBooks.map(book => ({
+              ...book,
+              reviewCount: book.reviewCount,
+              averageReviewRating: book.averageReviewRating,
+            }))}
             onBookPress={handleBookPress}
             isLoading={loading}
             horizontal={true}

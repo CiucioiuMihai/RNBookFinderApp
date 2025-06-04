@@ -43,7 +43,15 @@ const ReadingListScreen: React.FC<ReadingListScreenProps> = ({ navigation }) => 
       const booksWithDetails = await Promise.all(bookDetailsPromises);
       
       // Filter out any null results
-      setReadingListBooks(booksWithDetails.filter((book): book is Book => book !== null));
+      const enrichedBooks = booksWithDetails
+        .filter((book): book is Book => book !== null)
+        .map((book) => ({
+          ...book,
+          reviewCount: book.reviewCount || 0, // Default to 0 if not provided
+          averageReviewRating: book.averageReviewRating || 0, // Default to 0 if not provided
+        }));
+
+      setReadingListBooks(enrichedBooks);
 
       // Refresh favoriteBookIds state
       const favoriteIds = await getFavoriteBookIds(currentUser.uid);

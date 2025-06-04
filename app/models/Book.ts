@@ -41,6 +41,8 @@ export interface VolumeInfo {
   previewLink?: string;
   infoLink?: string;
   canonicalVolumeLink?: string;
+  reviewCount?: number; // Number of user reviews
+  averageReviewRating?: number; // Average rating from user reviews
 }
 
 export interface IndustryIdentifier {
@@ -106,6 +108,8 @@ export interface Book {
   infoLink?: string;
   isbn10?: string;
   isbn13?: string;
+  reviewCount?: number; // Number of user reviews
+  averageReviewRating?: number; // Average rating from user reviews
 }
 
 // Function to convert from Google Books API format to our app's format
@@ -132,6 +136,8 @@ export function convertGoogleBookToBook(googleBook: GoogleBookItem): Book {
     previewLink: googleBook.volumeInfo.previewLink,
     infoLink: googleBook.volumeInfo.infoLink,
     isbn10,
-    isbn13
+    isbn13,
+    reviewCount: googleBook.volumeInfo.reviewCount || 0,
+    averageReviewRating: googleBook.volumeInfo.averageReviewRating || 0,
   };
 }

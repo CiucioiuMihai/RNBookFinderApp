@@ -47,6 +47,8 @@ const BookList: React.FC<BookListProps> = ({
       onPress={onBookPress}
       isFavorite={favoriteBookIds.includes(item.id)}
       onToggleFavorite={onToggleFavorite}
+      reviewCount={item.reviewCount} // Pass user review count
+      averageReviewRating={item.averageReviewRating} // Pass average user review rating
     />
   );
 

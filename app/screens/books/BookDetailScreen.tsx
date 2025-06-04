@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../../theme/useTheme';
 import { getBookById } from '../../services/books-api';
 import BookDetails from '../../components/Books/BookDetails';
-import { Book } from '../../models/book';
+import { Book } from '../../models/Book';
 import { BookReview } from '../../models/BookReview';
 import { 
   getBookReviews, 
@@ -66,6 +66,19 @@ const BookDetailScreen: React.FC<BookDetailScreenProps> = ({ navigation, route }
 
     loadBookData();
   }, [bookId, currentUser]);
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', async () => {
+      try {
+        const reviewsData = await getBookReviews(bookId);
+        setReviews(reviewsData);
+      } catch (error) {
+        console.error('Error refreshing reviews:', error);
+      }
+    });
+
+    return unsubscribe;
+  }, [navigation, bookId]);
 
   const handleToggleFavorite = async () => {
     if (!currentUser) {

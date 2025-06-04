@@ -136,7 +136,11 @@ const SearchScreen: React.FC<SearchScreenProps> = ({ navigation, route }) => {
 
       {books.length > 0 ? (
         <BookList
-          books={books}
+          books={books.map(book => ({
+            ...book,
+            reviewCount: book.reviewCount,
+            averageReviewRating: book.averageReviewRating,
+          }))}
           onBookPress={handleBookPress}
           favoriteBookIds={favoriteIds}
           onToggleFavorite={handleToggleFavorite}

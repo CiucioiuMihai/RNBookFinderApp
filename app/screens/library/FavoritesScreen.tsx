@@ -126,7 +126,11 @@ const FavoritesScreen: React.FC<FavoritesScreenProps> = ({ navigation }) => {
 
       {favoriteBooks.length > 0 ? (
         <BookList
-          books={favoriteBooks}
+          books={favoriteBooks.map(book => ({
+            ...book,
+            reviewCount: book.reviewCount,
+            averageReviewRating: book.averageReviewRating,
+          }))}
           onBookPress={handleBookPress}
           isLoading={isLoading && !refreshing}
           refreshing={refreshing}

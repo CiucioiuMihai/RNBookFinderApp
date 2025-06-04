@@ -9,13 +9,17 @@ interface BookCardProps {
   onPress: (book: Book) => void;
   isFavorite?: boolean;
   onToggleFavorite?: (book: Book) => void;
+  reviewCount?: number; // Number of user reviews
+  averageReviewRating?: number; // Average rating from user reviews
 }
 
 const BookCard: React.FC<BookCardProps> = ({ 
   book, 
   onPress, 
   isFavorite = false,
-  onToggleFavorite
+  onToggleFavorite,
+  reviewCount = 0,
+  averageReviewRating = 0,
 }) => {
   const { colors, theme } = useTheme();
   const placeholderImage = 'https://via.placeholder.com/128x192/e0e0e0/a0a0a0?text=No+Cover';
@@ -55,6 +59,23 @@ const BookCard: React.FC<BookCardProps> = ({
           >
             {book.authors.join(', ')}
           </Text>
+        )}
+
+        {reviewCount > 0 && (
+          <View style={styles.ratingContainer}>
+            <Text style={[styles.rating, { color: colors.text }]}>User Rating: {averageReviewRating.toFixed(1)}</Text>
+            <View style={styles.starsContainer}>
+              {[1, 2, 3, 4, 5].map((star) => (
+                <Icon 
+                  key={star}
+                  name={(averageReviewRating ?? 0) >= star ? 'star' : 'star-outline'} 
+                  size={14} 
+                  color={(averageReviewRating ?? 0) >= star ? '#FFC107' : colors.textSecondary} 
+                />
+              ))}
+              <Text style={[styles.ratingsCount, { color: colors.textSecondary }]}>({reviewCount})</Text>
+            </View>
+          </View>
         )}
 
         {onToggleFavorite && (
@@ -110,6 +131,21 @@ const styles = StyleSheet.create({
   author: {
     fontSize: 14,
     marginBottom: 8,
+  },
+  ratingContainer: {
+    marginBottom: 8,
+  },
+  rating: {
+    fontSize: 14,
+    marginBottom: 4,
+  },
+  starsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  ratingsCount: {
+    marginLeft: 4,
+    fontSize: 12,
   },
   favoriteButton: {
     position: 'absolute',
