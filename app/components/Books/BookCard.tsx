@@ -57,29 +57,6 @@ const BookCard: React.FC<BookCardProps> = ({
           </Text>
         )}
 
-        {book.averageRating && (
-          <View style={styles.ratingContainer}>
-            <Text style={[styles.rating, { color: colors.text }]}>
-              {book.averageRating.toFixed(1)}
-            </Text>
-            <View style={styles.starsContainer}>
-              {[1, 2, 3, 4, 5].map((star) => (
-                <Icon 
-                  key={star}
-                  name={(book.averageRating ?? 0) >= star ? 'star' : 'star-outline'} 
-                  size={14} 
-                  color={(book.averageRating ?? 0) >= star ? '#FFC107' : colors.textSecondary} 
-                />
-              ))}
-              {book.ratingsCount && (
-                <Text style={[styles.ratingsCount, { color: colors.textSecondary }]}>
-                  ({book.ratingsCount})
-                </Text>
-              )}
-            </View>
-          </View>
-        )}
-
         {onToggleFavorite && (
           <TouchableOpacity 
             style={styles.favoriteButton} 
@@ -133,24 +110,6 @@ const styles = StyleSheet.create({
   author: {
     fontSize: 14,
     marginBottom: 8,
-  },
-  ratingContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 4,
-  },
-  rating: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    marginRight: 8,
-  },
-  starsContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  ratingsCount: {
-    fontSize: 12,
-    marginLeft: 4,
   },
   favoriteButton: {
     position: 'absolute',

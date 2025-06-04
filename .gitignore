@@ -1,13 +1,26 @@
 # Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
 
-# dependencies
-node_modules/
-
 # Expo
-.expo/
+.expo
 dist/
 web-build/
 expo-env.d.ts
+
+# Git
+.git
+
+# Snapshots
+.snapshots
+
+# VS Code
+.vscode
+
+# Native directories
+android
+ios
+
+# Dependencies
+node_modules/
 
 # Native
 .kotlin/

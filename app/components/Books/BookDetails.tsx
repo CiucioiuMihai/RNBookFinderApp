@@ -9,7 +9,7 @@ import {
   Dimensions,
   Linking
 } from 'react-native';
-import { Book } from '../../models/book';
+import { Book } from '../../models/Book';
 import { useTheme } from '../../theme/useTheme';
 import { BookReview } from '../../models/BookReview';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
