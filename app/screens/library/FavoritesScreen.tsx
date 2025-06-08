@@ -8,6 +8,8 @@ import { getFavoriteBookIds, removeFromFavorites } from '../../services/firebase
 import { getBookById } from '../../services/books-api';
 import { auth } from '../../../firebaseConfig';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import NetInfo from '@react-native-community/netinfo';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface FavoritesScreenProps {
   navigation: any;
@@ -21,29 +23,43 @@ const FavoritesScreen: React.FC<FavoritesScreenProps> = ({ navigation }) => {
   const currentUser = auth.currentUser;
 
   const loadFavorites = async () => {
-    if (!currentUser) {
-      setFavoriteBooks([]);
-      setIsLoading(false);
-      return;
-    }
+    NetInfo.fetch().then(async state => {
+      if (state.isConnected) {
+        if (!currentUser) {
+          setFavoriteBooks([]);
+          setIsLoading(false);
+          return;
+        }
 
-    setIsLoading(true);
-    try {
-      const favoriteIds = await getFavoriteBookIds(currentUser.uid);
-      
-      // Fetch details for each book ID
-      const bookDetailsPromises = favoriteIds.map(id => getBookById(id));
-      const booksWithDetails = await Promise.all(bookDetailsPromises);
-      
-      // Filter out any null results
-      setFavoriteBooks(booksWithDetails.filter((book): book is Book => book !== null));
-    } catch (error) {
-      console.error('Error loading favorites:', error);
-      Alert.alert('Error', 'Failed to load favorite books');
-    } finally {
-      setIsLoading(false);
-      setRefreshing(false);
-    }
+        setIsLoading(true);
+        try {
+          const favoriteIds = await getFavoriteBookIds(currentUser.uid);
+          const bookDetailsPromises = favoriteIds.map(id => getBookById(id));
+          const booksWithDetails = await Promise.all(bookDetailsPromises);
+          setFavoriteBooks(booksWithDetails.filter((book): book is Book => book !== null));
+          AsyncStorage.setItem('favorites', JSON.stringify(booksWithDetails));
+        } catch (error) {
+          console.error('Error loading favorites:', error);
+          Alert.alert('Error', 'Failed to load favorite books');
+        } finally {
+          setIsLoading(false);
+          setRefreshing(false);
+        }
+      } else {
+        // Retrieve cached favorites
+        AsyncStorage.getItem('favorites')
+          .then(data => {
+            if (data) {
+              setFavoriteBooks(JSON.parse(data));
+            }
+          })
+          .catch(err => console.error('Failed to load cached favorites:', err))
+          .finally(() => {
+            setIsLoading(false);
+            setRefreshing(false);
+          });
+      }
+    });
   };
 
   useEffect(() => {

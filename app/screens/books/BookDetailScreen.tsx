@@ -17,6 +17,8 @@ import {
 } from '../../services/firebase-utils';
 import { auth } from '../../../firebaseConfig';
 import { BookDetailScreenNavigationProp, BookDetailScreenRouteProp } from '../../navigation/types';
+import NetInfo from '@react-native-community/netinfo';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface BookDetailScreenProps {
   navigation: BookDetailScreenNavigationProp;
@@ -42,10 +44,12 @@ const BookDetailScreen: React.FC<BookDetailScreenProps> = ({ navigation, route }
         // Fetch book details
         const bookData = await getBookById(bookId);
         setBook(bookData);
+        AsyncStorage.setItem(`book_${bookId}`, JSON.stringify(bookData));
 
         // Fetch reviews
         const reviewsData = await getBookReviews(bookId);
         setReviews(reviewsData);
+        AsyncStorage.setItem(`reviews_${bookId}`, JSON.stringify(reviewsData));
 
         // Check if book is favorited and in reading list (if user is logged in)
         if (currentUser) {
@@ -64,7 +68,29 @@ const BookDetailScreen: React.FC<BookDetailScreenProps> = ({ navigation, route }
       }
     };
 
-    loadBookData();
+    NetInfo.fetch().then(state => {
+      if (state.isConnected) {
+        // Online: Load data from API
+        loadBookData();
+      } else {
+        // Offline: Load data from AsyncStorage
+        AsyncStorage.getItem(`book_${bookId}`)
+          .then(data => {
+            if (data) {
+              setBook(JSON.parse(data));
+            }
+          })
+          .catch(err => console.error('Failed to load cached book details:', err));
+
+        AsyncStorage.getItem(`reviews_${bookId}`)
+          .then(data => {
+            if (data) {
+              setReviews(JSON.parse(data));
+            }
+          })
+          .catch(err => console.error('Failed to load cached reviews:', err));
+      }
+    });
   }, [bookId, currentUser]);
 
   useEffect(() => {

@@ -8,6 +8,8 @@ import { getUserByUid, removeFromReadingList, getFavoriteBookIds } from '../../s
 import { getBookById } from '../../services/books-api';
 import { auth } from '../../../firebaseConfig';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import NetInfo from '@react-native-community/netinfo';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface ReadingListScreenProps {
   navigation: any;
@@ -22,47 +24,67 @@ const ReadingListScreen: React.FC<ReadingListScreenProps> = ({ navigation }) => 
   const currentUser = auth.currentUser;
 
   const loadReadingList = async () => {
-    if (!currentUser) {
-      setReadingListBooks([]);
-      setIsLoading(false);
-      return;
-    }
+    NetInfo.fetch().then(async state => {
+      if (state.isConnected) {
+        if (!currentUser) {
+          setReadingListBooks([]);
+          setIsLoading(false);
+          return;
+        }
 
-    setIsLoading(true);
-    try {
-      // Get user data
-      const userData = await getUserByUid(currentUser.uid);
-      
-      if (!userData || !userData.readingList || userData.readingList.length === 0) {
-        setReadingListBooks([]);
-        return;
+        setIsLoading(true);
+        try {
+          // Get user data
+          const userData = await getUserByUid(currentUser.uid);
+          
+          if (!userData || !userData.readingList || userData.readingList.length === 0) {
+            setReadingListBooks([]);
+            return;
+          }
+          
+          // Fetch details for each book ID in reading list
+          const bookDetailsPromises = userData.readingList.map(id => getBookById(id));
+          const booksWithDetails = await Promise.all(bookDetailsPromises);
+          
+          // Filter out any null results
+          const enrichedBooks = booksWithDetails
+            .filter((book): book is Book => book !== null)
+            .map((book) => ({
+              ...book,
+              reviewCount: book.reviewCount || 0, // Default to 0 if not provided
+              averageReviewRating: book.averageReviewRating || 0, // Default to 0 if not provided
+            }));
+
+          setReadingListBooks(enrichedBooks);
+
+          // Refresh favoriteBookIds state
+          const favoriteIds = await getFavoriteBookIds(currentUser.uid);
+          setFavoriteBookIds(favoriteIds);
+
+          // Cache reading list in AsyncStorage
+          AsyncStorage.setItem('readingList', JSON.stringify(enrichedBooks));
+        } catch (error) {
+          console.error('Error loading reading list:', error);
+          Alert.alert('Error', 'Failed to load reading list');
+        } finally {
+          setIsLoading(false);
+          setRefreshing(false);
+        }
+      } else {
+        // Retrieve cached reading list
+        AsyncStorage.getItem('readingList')
+          .then(data => {
+            if (data) {
+              setReadingListBooks(JSON.parse(data));
+            }
+          })
+          .catch(err => console.error('Failed to load cached reading list:', err))
+          .finally(() => {
+            setIsLoading(false);
+            setRefreshing(false);
+          });
       }
-      
-      // Fetch details for each book ID in reading list
-      const bookDetailsPromises = userData.readingList.map(id => getBookById(id));
-      const booksWithDetails = await Promise.all(bookDetailsPromises);
-      
-      // Filter out any null results
-      const enrichedBooks = booksWithDetails
-        .filter((book): book is Book => book !== null)
-        .map((book) => ({
-          ...book,
-          reviewCount: book.reviewCount || 0, // Default to 0 if not provided
-          averageReviewRating: book.averageReviewRating || 0, // Default to 0 if not provided
-        }));
-
-      setReadingListBooks(enrichedBooks);
-
-      // Refresh favoriteBookIds state
-      const favoriteIds = await getFavoriteBookIds(currentUser.uid);
-      setFavoriteBookIds(favoriteIds);
-    } catch (error) {
-      console.error('Error loading reading list:', error);
-      Alert.alert('Error', 'Failed to load reading list');
-    } finally {
-      setIsLoading(false);
-      setRefreshing(false);
-    }
+    });
   };
 
   useEffect(() => {

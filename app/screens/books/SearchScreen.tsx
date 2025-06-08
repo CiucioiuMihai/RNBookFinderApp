@@ -9,6 +9,8 @@ import SearchBar from '../../components/Books/SearchBar';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { getFavoriteBookIds, isBookFavorited, addToFavorites, removeFromFavorites } from '../../services/firebase-utils';
 import { auth } from '../../../firebaseConfig';
+import NetInfo from '@react-native-community/netinfo';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface SearchScreenProps {
   navigation: any;
@@ -43,18 +45,32 @@ const SearchScreen: React.FC<SearchScreenProps> = ({ navigation, route }) => {
   }, [currentUser, route.params]);
 
   const handleSearch = async (query: string) => {
-    setSearchQuery(query);
-    setLoading(true);
-    setHasSearched(true);
-    
-    try {
-      const results = await searchBooks(query);
-      setBooks(results);
-    } catch (error) {
-      console.error('Search error:', error);
-    } finally {
-      setLoading(false);
-    }
+    NetInfo.fetch().then(async state => {
+      if (state.isConnected) {
+        setSearchQuery(query);
+        setLoading(true);
+        setHasSearched(true);
+
+        try {
+          const results = await searchBooks(query);
+          setBooks(results);
+          AsyncStorage.setItem(`search_${query}`, JSON.stringify(results));
+        } catch (error) {
+          console.error('Search error:', error);
+        } finally {
+          setLoading(false);
+        }
+      } else {
+        // Retrieve cached search results
+        AsyncStorage.getItem(`search_${query}`)
+          .then(data => {
+            if (data) {
+              setBooks(JSON.parse(data));
+            }
+          })
+          .catch(err => console.error('Failed to load cached search results:', err));
+      }
+    });
   };
 
   const handleBookPress = (book: Book) => {

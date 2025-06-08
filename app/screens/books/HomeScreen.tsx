@@ -10,6 +10,8 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { getFavoriteBookIds, isBookFavorited, addToFavorites, removeFromFavorites, logout } from '../../services/firebase-utils';
 import { auth } from '../../../firebaseConfig';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import NetInfo from '@react-native-community/netinfo';
+import { saveToStorage, getFromStorage } from '../../services/storage-utils';
 
 interface HomeScreenProps {
   navigation: any;
@@ -35,11 +37,26 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   const currentUser = auth.currentUser;
 
   useEffect(() => {
-    // Fetch new releases
-    searchBooks('q=subject:fiction&orderBy=newest&maxResults=10')
-      .then(books => setNewReleases(books))
-      .catch(err => console.error('Failed to fetch new releases:', err))
-      .finally(() => setLoading(false));
+    const fetchNewReleases = async () => {
+      const netInfo = await NetInfo.fetch();
+      if (netInfo.isConnected) {
+        searchBooks('q=subject:fiction&orderBy=newest&maxResults=10')
+          .then(books => {
+            setNewReleases(books);
+            saveToStorage('newReleases', books);
+          })
+          .catch(err => console.error('Failed to fetch new releases:', err))
+          .finally(() => setLoading(false));
+      } else {
+        const cachedBooks = await getFromStorage('newReleases');
+        if (cachedBooks) {
+          setNewReleases(cachedBooks);
+        }
+        setLoading(false);
+      }
+    };
+
+    fetchNewReleases();
 
     // Fetch popular books
     searchBooks('&orderBy=relevance&maxResults=10')

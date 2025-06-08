@@ -48,3 +48,9 @@ yarn-error.*
 
 # typescript
 *.tsbuildinfo
+
+# Firebase configuration
+.firebaserc
+
+# Expo Application Services
+eas.json
