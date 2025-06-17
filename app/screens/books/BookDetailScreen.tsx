@@ -18,7 +18,7 @@ import {
 import { auth } from '../../../firebaseConfig';
 import { BookDetailScreenNavigationProp, BookDetailScreenRouteProp } from '../../navigation/types';
 import NetInfo from '@react-native-community/netinfo';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { saveToStorage, getFromStorage } from '../../services/storage-utils';
 
 interface BookDetailScreenProps {
   navigation: BookDetailScreenNavigationProp;
@@ -44,12 +44,18 @@ const BookDetailScreen: React.FC<BookDetailScreenProps> = ({ navigation, route }
         // Fetch book details
         const bookData = await getBookById(bookId);
         setBook(bookData);
-        AsyncStorage.setItem(`book_${bookId}`, JSON.stringify(bookData));
+        // Add error handling for saving book details
+        await saveToStorage(`book_${bookId}`, bookData);
 
         // Fetch reviews
         const reviewsData = await getBookReviews(bookId);
         setReviews(reviewsData);
-        AsyncStorage.setItem(`reviews_${bookId}`, JSON.stringify(reviewsData));
+        // Add error handling for saving reviews
+        await saveToStorage(`reviews_${bookId}`, reviewsData);
+
+        // Add logs for debugging
+        console.log('Saving book details to storage-utils:', bookData);
+        console.log('Saving reviews to storage-utils:', reviewsData);
 
         // Check if book is favorited and in reading list (if user is logged in)
         if (currentUser) {
@@ -66,38 +72,57 @@ const BookDetailScreen: React.FC<BookDetailScreenProps> = ({ navigation, route }
       } finally {
         setLoading(false);
       }
-    };
+    };    NetInfo.fetch().then(async state => {
+      console.log('Network state:', state.isConnected ? 'Online' : 'Offline');
+      
+      // Try to load cached data first regardless of network state
+      try {
+        const cachedBookData = await getFromStorage(`book_${bookId}`);
+        console.log('Retrieved book details from storage-utils:', cachedBookData);
+        if (cachedBookData) {
+          setBook(cachedBookData);
+          setLoading(false); // Set loading to false if we have cached data
+        }
 
-    NetInfo.fetch().then(state => {
+        const cachedReviewsData = await getFromStorage(`reviews_${bookId}`);
+        console.log('Retrieved reviews from storage-utils:', cachedReviewsData);
+        if (cachedReviewsData) {
+          setReviews(cachedReviewsData);
+        }
+      } catch (err) {
+        console.error('Error loading cached data:', err);
+      }
+      
+      // If online, load fresh data
       if (state.isConnected) {
-        // Online: Load data from API
         loadBookData();
       } else {
-        // Offline: Load data from AsyncStorage
-        AsyncStorage.getItem(`book_${bookId}`)
-          .then(data => {
-            if (data) {
-              setBook(JSON.parse(data));
-            }
-          })
-          .catch(err => console.error('Failed to load cached book details:', err));
-
-        AsyncStorage.getItem(`reviews_${bookId}`)
-          .then(data => {
-            if (data) {
-              setReviews(JSON.parse(data));
-            }
-          })
-          .catch(err => console.error('Failed to load cached reviews:', err));
+        // If we're offline and didn't load cached data above, show message
+        if (!await getFromStorage(`book_${bookId}`)) {
+          console.warn('No cached book details found for book:', bookId);
+          setLoading(false);
+          setError('No cached data available offline. Please reconnect to the internet.');
+        }
       }
     });
   }, [bookId, currentUser]);
-
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', async () => {
       try {
-        const reviewsData = await getBookReviews(bookId);
-        setReviews(reviewsData);
+        // Only refresh reviews if online
+        const netInfo = await NetInfo.fetch();
+        if (netInfo.isConnected) {
+          const reviewsData = await getBookReviews(bookId);
+          setReviews(reviewsData);
+          // Save the latest reviews to storage
+          await saveToStorage(`reviews_${bookId}`, reviewsData);
+        } else {
+          // If offline, try to load from cache
+          const cachedReviews = await getFromStorage(`reviews_${bookId}`);
+          if (cachedReviews) {
+            setReviews(cachedReviews);
+          }
+        }
       } catch (error) {
         console.error('Error refreshing reviews:', error);
       }
@@ -178,13 +203,30 @@ const BookDetailScreen: React.FC<BookDetailScreenProps> = ({ navigation, route }
       </View>
     );
   }
-
-  if (error || !book) {
+  if (error) {
     return (
       <View style={[styles.errorContainer, { backgroundColor: colors.background }]}>
         <Text style={[styles.errorText, { color: colors.error }]}>
-          {error || 'Book not found'}
+          {error}
         </Text>
+      </View>
+    );
+  }
+
+  if (!book) {
+    return (
+      <View style={[styles.loadingContainer, { backgroundColor: colors.background }]}>
+        <Text style={{ color: colors.text, textAlign: 'center', marginHorizontal: 20 }}>
+          No book details available offline. Please check your internet connection and try again.
+        </Text>
+      </View>
+    );
+  }
+
+  if (reviews.length === 0) {
+    return (
+      <View style={[styles.loadingContainer, { backgroundColor: colors.background }]}>
+        <Text style={{ color: colors.text }}>No reviews available offline.</Text>
       </View>
     );
   }
